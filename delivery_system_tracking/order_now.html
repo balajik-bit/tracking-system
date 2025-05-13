@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .product-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        p {
+            font-size: 18px;
+            color: #777;
+            margin: 10px 0;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn-confirm {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background-color: #218838;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-details {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        .order-details p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .order-details strong {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h2>Order Details</h2>
+
+    <div class="product-card">
+        <h3 id="product-name">Product Name</h3>
+        <p id="product-price">Price: ₹Product Price</p>
+        <div class="button-group">
+            <button id="confirmBtn" class="btn btn-confirm">Confirm Order</button>
+            <a href="product.html" class="btn btn-back">Back to Products</a>
+        </div>
+        <div id="message" class="message" style="display: none;"></div>
+        <div id="orderDetails" class="order-details" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Get product details from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        const productName = urlParams.get('name');
+        const productPrice = urlParams.get('price');
+
+        // Update the product details
+        document.getElementById('product-name').textContent = productName;
+        document.getElementById('product-price').textContent = `Price: ₹${productPrice}`;
+
+        // Handle order confirmation
+        document.getElementById('confirmBtn').addEventListener('click', function() {
+            const messageDiv = document.getElementById('message');
+            const orderDetailsDiv = document.getElementById('orderDetails');
+            
+            // Make API call to confirm order
+            fetch(`confirm_order.php?id=${productId}&name=${encodeURIComponent(productName)}&price=${encodeURIComponent(productPrice)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        messageDiv.className = 'message success-message';
+                        messageDiv.textContent = 'Your order is confirmed';
+                        messageDiv.style.display = 'block';
+                        
+                        // Display order details
+                        orderDetailsDiv.innerHTML = `
+                            <p><strong>Order ID:</strong> #${data.order_id}</p>
+                            <p><strong>Product ID:</strong> ${data.product_id}</p>
+                            <p><strong>Product Name:</strong> ${data.product_name}</p>
+                            <p><strong>Order Date:</strong> ${data.order_date}</p>
+                            <p><strong>Delivery Address:</strong> ${data.delivery_address}</p>
+                        `;
+                        orderDetailsDiv.style.display = 'block';
+                        
+                        document.getElementById('confirmBtn').style.display = 'none';
+                    } else {
+                        messageDiv.className = 'message error-message';
+                        messageDiv.textContent = 'Your order is not placed';
+                        messageDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    messageDiv.className = 'message error-message';
+                    messageDiv.textContent = 'Your order is not placed';
+                    messageDiv.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>

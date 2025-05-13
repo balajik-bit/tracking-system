@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product List - Delivery Tracking System</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background-color: #f9f9f9; 
+      margin: 0; 
+      padding: 0; 
+    }
+    header { 
+      background-color: #007bff; 
+      padding: 15px; 
+      text-align: center; 
+    }
+    .nav-bar a { 
+      color: white; 
+      margin: 0 15px; 
+      text-decoration: none; 
+      font-weight: bold; 
+    }
+    .nav-bar a:hover { 
+      background-color: #0056b3; 
+      border-radius: 5px; 
+    }
+    #signup { 
+      color: white; 
+      background-color: red; 
+      padding: 10px; 
+      font-weight: bold; 
+      border-radius: 5px; 
+    }
+    #logout {
+      color: white;
+      background-color: #dc3545;
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    h1 { 
+      text-align: center; 
+      color: #333; 
+      margin-top: 20px; 
+    }
+    .products-container { 
+      display: flex; 
+      justify-content: center; 
+      gap: 20px; 
+      flex-wrap: wrap; 
+      margin: 20px;
+      padding: 20px;
+    }
+    .product-card { 
+      background-color: white; 
+      border-radius: 10px; 
+      width: 300px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+      padding: 20px; 
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .product-image {
+      margin-bottom: 15px;
+    }
+    .product-image img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .product-name { 
+      font-size: 24px; 
+      font-weight: bold; 
+      margin: 10px 0;
+      color: #333;
+    }
+    .product-description {
+      color: #666;
+      margin: 15px 0;
+      font-size: 16px;
+      line-height: 1.4;
+      overflow: hidden;
+    }
+    .product-price { 
+      color: #28a745;
+      font-size: 28px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .btn { 
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-primary:hover { 
+      background-color: #0056b3; 
+    }
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background-color: #545b62;
+    }
+    .error-message {
+      color: #dc3545;
+      text-align: center;
+      margin: 20px 0;
+      padding: 20px;
+      background-color: #f8d7da;
+      border-radius: 5px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-bar">
+      <a href="product.html">Home</a>
+      <a href="view_orders.php">Orders</a>
+      <a id="loginLink" href="login.html">Login</a>
+      <a id="signupLink" href="signup.html">Signup</a>
+      <a id="logoutLink" href="logout.php" class="hidden">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>🛍️ Available Products</h1>
+
+    <div class="products-container" id="productsContainer">
+      <div class="loading">Loading products...</div>
+    </div>
+  </main>
+
+  <script>
+    function checkAuth() {
+      fetch('check_auth.php')
+        .then(response => response.json())
+        .then(data => {
+          // Update navigation bar based on login status
+          const loginLink = document.getElementById('loginLink');
+          const signupLink = document.getElementById('signupLink');
+          const logoutLink = document.getElementById('logoutLink');
+
+          if (data.logged_in) {
+            loginLink.classList.add('hidden');
+            signupLink.classList.add('hidden');
+            logoutLink.classList.remove('hidden');
+          } else {
+            loginLink.classList.remove('hidden');
+            signupLink.classList.remove('hidden');
+            logoutLink.classList.add('hidden');
+          }
+        })
+        .catch(error => {
+          console.error('Error checking authentication:', error);
+        });
+    }
+  
+    function fetchProducts() {
+      fetch('fetch_products.php')
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById('productsContainer');
+          
+          if (data.status === 'success') {
+            if (data.products.length === 0) {
+              container.innerHTML = '<div class="error-message">No products available at the moment.</div>';
+              return;
+            }
+
+            // Clear the container first
+            container.innerHTML = '';
+
+            // Add each product only once
+            data.products.forEach(product => {
+              const productCard = document.createElement('div');
+              productCard.className = 'product-card';
+              productCard.innerHTML = `
+                <div class="product-image">
+                  <img src="${product.image ? 'uploads/' + product.image : 'placeholder.jpg'}" alt="${product.name}" onerror="this.src='placeholder.jpg'">
+                </div>
+                <div class="product-name">${product.name}</div>
+                <div class="product-description">${product.description || 'No description available'}</div>
+                <div class="product-price">₹${product.price}</div>
+                <div class="button-group">
+                  <button class="btn btn-secondary" onclick="viewProduct(${product.id})">View Details</button>
+                  <button class="btn btn-primary" onclick="orderProduct(${product.id})">Order Now</button>
+                </div>
+              `;
+              container.appendChild(productCard);
+            });
+          } else {
+            container.innerHTML = `
+              <div class="error-message">
+                Error: ${data.message || 'Failed to load products'}
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          document.getElementById('productsContainer').innerHTML = `
+            <div class="error-message">
+              Error: ${error.message || 'Failed to fetch products'}
+            </div>
+          `;
+        });
+    }
+
+    function viewProduct(productId) {
+      window.location.href = `view_product.php?id=${productId}`;
+    }
+
+    function orderProduct(productId) {
+      fetch('check_auth.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.logged_in) {
+            // Get product details for the order page
+            fetch(`fetch_products.php?id=${productId}`)
+              .then(response => response.json())
+              .then(productData => {
+                if (productData.status === 'success' && productData.products.length > 0) {
+                  const product = productData.products[0];
+                  const encodedName = encodeURIComponent(product.name);
+                  const encodedPrice = encodeURIComponent(product.price);
+                  const url = `order_now.html?id=${productId}&name=${encodedName}&price=${encodedPrice}`;
+                  window.location.href = url;
+                } else {
+                  alert('Product not found');
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching product details:', error);
+                alert('Error fetching product details. Please try again.');
+              });
+          } else {
+            alert('Please login to place an order');
+            window.location.href = 'login.html';
+          }
+        })
+        .catch(error => {
+          console.error('Error checking authentication:', error);
+          alert('Error checking authentication. Please try again.');
+        });
+    }
+
+    // Load products and check auth status when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchProducts();
+      checkAuth();
+    });
+  </script>
+</body>
+</html>

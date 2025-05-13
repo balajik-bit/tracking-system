@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        .order-list {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 30px auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-details {
+            font-size: 16px;
+            color: #555;
+        }
+        .order-date {
+            font-size: 14px;
+            color: #888;
+        }
+        .back-btn {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .back-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Your Orders</h2>
+
+<div class="order-list" id="orderList">
+     Real orders will be loaded here 
+<!-- </div>
+
+
+<a href="product.html" class="back-btn">Back to Products</a>
+
+<script>
+    // Fetch orders from the backend
+    fetch('order_now.html')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status && data.status === "error") {
+                alert(data.message);  // Show error message if any
+            } else {
+                displayOrders(data);  // If orders found, display them
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching orders:', error);
+        });
+
+    // Function to display orders
+    function displayOrders(orders) {
+        const orderListContainer = document.getElementById('orderList');
+        
+        if (orders.length === 0) {
+            orderListContainer.innerHTML = "<p>No orders found.</p>";
+            return;
+        }
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement('div');
+            orderDiv.classList.add('order-item');
+            
+            orderDiv.innerHTML = `
+                <div class="order-details">
+                    <strong>Product:</strong> ${order.product_name}  
+                </div>
+                <div class="order-date">
+                    <strong>Order Date:</strong> ${order.order_date}  
+                </div>
+            `;
+            
+            orderListContainer.appendChild(orderDiv);
+        });
+    }
+</script>
+
+</body>
+</html>
